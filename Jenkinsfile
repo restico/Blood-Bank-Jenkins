@@ -11,7 +11,7 @@ pipeline {
     stages {
         stage ('TEST') {
             steps {
-                sh "echo 'Hello $USER'"
+                sh 'echo "Hello $DB_USER"'
                 sh "java --version"
                 sh "docker --version"
                 sh "git --version"
