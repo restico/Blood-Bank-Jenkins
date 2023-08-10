@@ -9,14 +9,16 @@ pipeline {
     }
 
     stages {
-        stage ('TEST') {
+        stage('Configure project') {
             steps {
-                sh 'echo "Hello $DB_USER"'
-                sh "java --version"
-                sh "docker --version"
-                sh "git --version"
-		sh "tree"
+                sh 'src/file/generate-connection'
             }
+	}
+	stage('Build and run docker container') {
+	    steps {
+		sh 'docker build -t blood-bank-image .'
+		sh 'docker run -d -p 80:80 blood-bank-image'
+	    }
         }
     }
 }
