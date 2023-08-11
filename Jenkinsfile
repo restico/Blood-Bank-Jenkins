@@ -4,7 +4,7 @@ pipeline {
     }
     
     parameters {
-        booleanParam(name: 'FIRST_BUILD', defaultValue: false, description: 'Should pipeline init workflow?')
+        booleanParam(name: 'LOAD_DUMP', defaultValue: false, description: 'Should pipeline load dump to MySQL DB?')
     }
 
     options {
@@ -13,12 +13,11 @@ pipeline {
     }
 
     stages {
-        stage('Init workflow') {
+        stage('Load DB dump') {
             when { 
-                expression { return params.FIRST_BUILD }
+                expression { return params.LOAD_DUMP }
             }
             steps {
-                sh 'sh src/file/generate-connection'
                 sh '''if [[ -z $(mysql -e "SHOW DATABASES;" | grep blood_bank) ]]; then
                 mysql -e "CREATE DATABASE blood_bank;"
                 mysql blood_bank < src/sql/bloodbank.sql
@@ -34,6 +33,7 @@ pipeline {
 
 	stage('Build and run docker container') {
 	    steps {
+		sh 'sh src/file/generate-connection'
 		sh 'docker build -t blood-bank-image .'
 		sh 'docker run -d -p 80:80 --name blood-bank-container blood-bank-image'
 	    }
@@ -42,9 +42,7 @@ pipeline {
     
     post {
         success {
-            sh 'docker images'
             sh 'docker image prune -af'
-	    sh 'docker images'
         }
     }
 }
