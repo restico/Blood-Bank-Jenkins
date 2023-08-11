@@ -4,7 +4,7 @@ pipeline {
     }
     
     parameters {
-        booleanParam(name: 'LOAD_DUMP', defaultValue: false, description: 'Should pipeline load dump into MySQL DB')
+        booleanParam(name: 'FIRST_BUILD', defaultValue: false, description: 'Should pipeline init workflow?')
     }
 
     options {
@@ -13,11 +13,12 @@ pipeline {
     }
 
     stages {
-        stage('Load DB dump') {
+        stage('Init workflow') {
             when { 
-                expression { return params.LOAD_DUMP }
+                expression { return params.FIRST_BUILD }
             }
             steps {
+                sh 'sh src/file/generate-connection'
                 sh '''if [[ -z $(mysql -e "SHOW DATABASES;" | grep blood_bank) ]]; then
                 mysql -e "CREATE DATABASE blood_bank;"
                 mysql blood_bank < src/sql/bloodbank.sql
@@ -41,7 +42,9 @@ pipeline {
     
     post {
         success {
+            sh 'docker images'
             sh 'docker image prune -af'
+	    sh 'docker images'
         }
     }
 }
