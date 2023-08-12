@@ -26,8 +26,10 @@ pipeline {
         }
 	stage('Stop docker container') {
             steps {
-		sh 'docker stop blood-bank-container'
-		sh 'docker container prune -f'
+		sh '''if [[ -n $(docker ps | grep blood-bank-container) ]]; then
+		docker stop blood-bank-container
+		docker container prune -f
+		fi'''
             }
 	}
 
